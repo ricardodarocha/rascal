@@ -1,9 +1,11 @@
 # Variables and assignments
 
+var a := 10
 let x = 10
 let y = 20
 let name = "Whispem"
 
+print a
 print x
 print y
 print name
