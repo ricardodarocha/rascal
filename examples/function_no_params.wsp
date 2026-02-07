@@ -1,6 +1,6 @@
 # Function without parameters
 
-fn say_hello() {
+procedure say_hello() {
     print "Hello from a function!"
 }
 
