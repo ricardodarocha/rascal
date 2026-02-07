@@ -7,3 +7,6 @@ let x = 42  # You can also put comments after code
 # They're useful for documentation and explanations
 
 print x  # Output: 42
+
+//Legacy
+//Comment also can be double //
