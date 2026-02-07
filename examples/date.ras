@@ -1,0 +1,33 @@
+# Date values
+
+var today := d"21/01/2026 d/m/y"
+
+print today
+print today.fmt("y-m-d")
+
+# Date Operations
+today.year      // 2026
+today.month     // 1
+today.day       // 21
+
+today.add(5, 'd')
+today + 5
+
+today.sub(5, 'd')
+today.add(-5, 'd')
+today - 5
+
+var d1 := d"21/01/2026 d/m/y";
+var d2 := d"25/01/2026 d/m/y";
+
+print d2.diff(d1);   // 4 d
+
+# todo! intervals
+
+var d1 := d"21/01/2026 d/m/y";
+var d2 := d"25/01/2026 d/m/y";
+
+print d2 - d1;   // 4 d
+i"4 d" interval(4, 'd')
+
+https://www.postgresql.org/docs/current/functions-datetime.html
