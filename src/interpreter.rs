@@ -23,6 +23,8 @@ struct CallFrame {
 #[derive(Debug, Clone)]
 enum Value {
     Number(f64),
+    Integer(f64),
+    Date(i64, i64, i64, String),
     Bool(bool),
     String(String),
     Array(Vec<Value>),
@@ -208,6 +210,7 @@ impl Interpreter {
 
     fn eval(&mut self, expr: Expr) -> Value {
         match expr {
+            Expr::Integer(n) => Value::Integer(n),
             Expr::Number(n) => Value::Number(n),
             Expr::String(s) => Value::String(s),
             Expr::Bool(b) => Value::Bool(b),
