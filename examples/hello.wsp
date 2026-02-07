@@ -1,4 +1,5 @@
-# Hello World - First Whispem program
+# Hello World - First Rascal program
 
-let message = "Hello, Whispem!"
+var new_language := "Rascal";
+let message = f"Hello, {new_language}!"
 print message
