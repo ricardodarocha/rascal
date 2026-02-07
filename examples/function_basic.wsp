@@ -1,8 +1,13 @@
-# Basic function example
+# Basic procedure example
 
-fn greet(name) {
+procedure greet(name) 
+begin
     print "Hello, " + name + "!"
-}
+end
 
 greet("World")
 greet("Whispem")
+
+//function greet(name) { //also valid
+//fn greet(name) { //also valid
+
