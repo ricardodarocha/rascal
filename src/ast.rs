@@ -1,6 +1,8 @@
 #[derive(Debug, Clone)]
 pub enum Expr {
-    Number(f64),
+    Integer(i64),
+    Number(f64), //Todo! Change to Extended ?
+    Date(i64, i64, i64, String), // (07/02/2026, 'd/m/a')
     String(String),
     Bool(bool),
     Variable(String),
