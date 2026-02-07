@@ -1,12 +1,12 @@
 [package]
-name = "whispem"
-version = "1.0.0"
+name = "rascal"
+version = "0.0.1"
 edition = "2021"
-authors = ["Emilie PERETTI"]
-description = "A minimalist interpreted programming language designed for clarity and calm readability"
+authors = ["Ricardo da Rocha Vitor"]
+description = "A minimalist script programming language inspired by Pascal and Whispem writen in rust"
 license = "MIT"
-repository = "https://github.com/whispem/whispem-lang"
-keywords = ["interpreter", "language", "minimalist", "educational"]
+repository = "https://github.com/ricardodarocha/rascal"
+keywords = ["interpreter", "language", "minimalist", "educational", "pascal"]
 categories = ["compilers"]
 
 [dependencies]
