@@ -212,6 +212,7 @@ impl Interpreter {
         match expr {
             Expr::Integer(n) => Value::Integer(n),
             Expr::Number(n) => Value::Number(n),
+            Expr::Date(n) => Value::Date(n),
             Expr::String(s) => Value::String(s),
             Expr::Bool(b) => Value::Bool(b),
             Expr::Array(elements) => {
@@ -368,26 +369,40 @@ impl Interpreter {
                         };
                     }
                     "range" => {
-                        if arguments.len() != 2 {
-                            panic!("range() expects exactly 2 arguments (start, end), got {}", arguments.len());
+                        if arguments.len() != 2 && arguments.len() != 3 {
+                            panic!("range() expects exactly 2 arguments (start, end) or 3 arguments (start, end, step), got {}", arguments.len());
                         }
                         let start = self.eval(arguments[0].clone());
                         let end = self.eval(arguments[1].clone());
+                        let step = self.eval(arguments[2].clone()) if arguments.len() != 3 else "1".to_string();
                         
                         let start_num = match start {
                             Value::Number(n) => n as i64,
-                            _ => panic!("range() start must be a number"),
+                            _ => panic!("range() start must be an Integer number"),
                         };
                         
                         let end_num = match end {
                             Value::Number(n) => n as i64,
-                            _ => panic!("range() end must be a number"),
+                            _ => panic!("range() end must be an Integer number"),
                         };
                         
-                        let mut result = Vec::new();
-                        for i in start_num..end_num {
-                            result.push(Value::Number(i as f64));
+                        let step_num = match step {
+                            Value::Number(n) => n as f64,
+                            _ => panic!("range() step must be a Real number"),
+                        };
+                        
+                        // let mut result = Vec::new();
+                        // for i in start_num..end_num {
+                        //     result.push(Value::Number(i as f64));
+                        // }
+
+                        let mut x = start_num as f64;
+                        for _ in 0..(end_num - start_num) {
+                            result.push(Value::Number(x));
+                            x += step;
                         }
+                        //range(1, 6, 0.5) will produces [1.0, 1.5, 2.0, 2.5, 3.0]
+                        //range lenght is allways (end - start + 1)
                         
                         return Value::Array(result);
                     }
@@ -459,7 +474,7 @@ impl Interpreter {
                     .functions
                     .get(&name)
                     .cloned()
-                    .unwrap_or_else(|| panic!("Undefined function: {}", name));
+                    .unwrap_or_else(|| panic!("Undefined function or procedure: {}", name));
 
                 // Check argument count
                 if arguments.len() != func.params.len() {
@@ -526,6 +541,14 @@ impl Interpreter {
             (Value::String(a), "+", Value::String(b)) => {
                 Value::String(format!("{}{}", a, b))
             }
+            
+            // Comparison (integers)
+            (Value::Integer(a), "Less", Value::Integer(b)) => Value::Bool(a < b),
+            (Value::Integer(a), "LessEqual", Value::Integer(b)) => Value::Bool(a <= b),
+            (Value::Integer(a), "Greater", Value::Integer(b)) => Value::Bool(a > b),
+            (Value::Integer(a), "GreaterEqual", Value::Integer(b)) => Value::Bool(a >= b),
+            (Value::Integer(a), "EqualEqual", Value::Integer(b)) => Value::Bool(a == b),
+            (Value::Integer(a), "BangEqual", Value::Integer(b)) => Value::Bool(a != b),
 
             // Comparison (numbers)
             (Value::Number(a), "Less", Value::Number(b)) => Value::Bool(a < b),
@@ -534,6 +557,15 @@ impl Interpreter {
             (Value::Number(a), "GreaterEqual", Value::Number(b)) => Value::Bool(a >= b),
             (Value::Number(a), "EqualEqual", Value::Number(b)) => Value::Bool(a == b),
             (Value::Number(a), "BangEqual", Value::Number(b)) => Value::Bool(a != b),
+
+            // Comparison (dates)
+            // THis consider all dates are stored as y m d, string 'fmt' just means input format and output format to mask user inputs
+            (Value::Date(y1, m1, d1, _fmt), "Less", Value::Date(y2, m2, d2, _)) => Value::Bool((y1, m1, d1) < (y2, m2, d2)),
+            (Value::Date(y1, m1, d1, _fmt), "LessEqual", Value::Date(y2, m2, d2, _)) => Value::Bool((y1, m1, d1) <= (y2, m2, d2)), 
+            (Value::Date(y1, m1, d1, _fmt), "Greater", Value::Date(y2, m2, d2, _)) => Value::Bool((y1, m1, d1) > (y2, m2, d2)),
+            (Value::Date(y1, m1, d1, _fmt), "GreaterEqual", Value::Date(y2, m2, d2, _)) => Value::Bool((y1, m1, d1) >= (y2, m2, d2)),
+            (Value::Date(y1, m1, d1, _fmt), "EqualEqual", Value::Date(y2, m2, d2, _)) => Value::Bool((y1, m1, d1) == (y2, m2, d2)), 
+            (Value::Date(y1, m1, d1, _fmt), "BangEqual", Value::Date(y2, m2, d2, _)) => Value::Bool((y1, m1, d1) != (y2, m2, d2)),
 
             // Comparison (booleans)
             (Value::Bool(a), "EqualEqual", Value::Bool(b)) => Value::Bool(a == b),
@@ -554,6 +586,7 @@ impl Interpreter {
         match op.as_str() {
             "not" | "!" => Value::Bool(!self.is_truthy(&value)),
             "-" => match value {
+                Value::Integer(n) => Value::Integer(-n),
                 Value::Number(n) => Value::Number(-n),
                 _ => panic!("Cannot negate non-number"),
             },
@@ -561,24 +594,95 @@ impl Interpreter {
         }
     }
 
+    fn is_valid_date(y: i64, m: i64, d: i64) -> bool {
+        if y <= 0 || m < 1 || m > 12 || d < 1 {
+            return false;
+        }
+    
+        let days_in_month = match m {
+            1 | 3 | 5 | 7 | 8 | 10 | 12 => 31,
+            4 | 6 | 9 | 11 => 30,
+            2 => {
+                if is_leap_year(y) { 29 } else { 28 }
+            }
+            _ => return false,
+        };
+    
+        d <= days_in_month
+    }
+    
+    fn is_leap_year(y: i64) -> bool {
+        (y % 4 == 0 && y % 100 != 0) || (y % 400 == 0)
+    }
+
     fn is_truthy(&self, value: &Value) -> bool {
         match value {
             Value::Bool(b) => *b,
+            Value::Integer(n) => *n != 0,
             Value::Number(n) => *n != 0.0,
+            Value::Date(y, m, d, _fmt) => Self::is_valid_date(*y, *m, *d),
             Value::String(s) => !s.is_empty(),
             Value::Array(arr) => !arr.is_empty(),
             Value::None => false,
         }
     }
 
+    fn format_date(y: i64, m: i64, d: i64, fmt: &str) -> String {
+        let f = fmt.trim();
+    
+        if f.is_empty() {
+            return format!("{:04}-{:02}-{:02}", y, m, d);
+        }
+    
+        Self::apply_mask(y, m, d, f)
+    }
+    
+    fn apply_mask(y: i64, m: i64, d: i64, mask: &str) -> String {
+    let mut out = String::new();
+    let mut in_quotes = false;      // estamos dentro de '...'
+    let mut in_dquotes = false;     // estamos dentro de "..."
+
+    for c in mask.chars() {
+            match c {
+                // alterna modo literal e NÃO escreve a aspa
+                '\'' if !in_dquotes => {
+                    in_quotes = !in_quotes;
+                }
+                '"' if !in_quotes => {
+                    in_dquotes = !in_dquotes;
+                }
+    
+                // símbolos de data só valem quando NÃO estamos dentro de aspas
+                'y' | 'Y' | 'a' | 'A' if !in_quotes && !in_dquotes => {
+                    out.push_str(&format!("{:04}", y));
+                }
+                'm' | 'M' if !in_quotes && !in_dquotes => {
+                    out.push_str(&format!("{:02}", m));
+                }
+                'd' | 'D' if !in_quotes && !in_dquotes => {
+                    out.push_str(&format!("{:02}", d));
+                }
+    
+                // todo o resto vira literal
+                other => out.push(other),
+            }
+        }
+    
+        out
+    } 
+
     fn format_value(&self, value: Value) -> String {
         match value {
+            Value::Integer(i) => i.to_string(),
             Value::Number(n) => {
                 if n.fract() == 0.0 {
                     format!("{}", n as i64)
                 } else {
                     n.to_string()
                 }
+            },
+            Value::Date(y, m, d, fmt) => {
+                Self::format_date(y, m, d, &fmt)
             }
             Value::Bool(b) => b.to_string(),
             Value::String(s) => s,
