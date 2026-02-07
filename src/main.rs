@@ -16,8 +16,8 @@ fn main() {
     let args: Vec<String> = env::args().collect();
 
     if args.len() < 2 {
-        println!("Whispem v1.0.0");
-        println!("Usage: whispem <file.wsp>");
+        println!("Rascal v0.0.1");
+        println!("Usage: rascal <file.ras>");
         return;
     }
 
@@ -26,7 +26,7 @@ fn main() {
     let input = match fs::read_to_string(filename) {
         Ok(content) => content,
         Err(e) => {
-            eprintln!("Error: Failed to read file '{}': {}", filename, e);
+            eprintln!("Rascal Error: Failed to read file '{}': {}", filename, e);
             std::process::exit(1);
         }
     };
