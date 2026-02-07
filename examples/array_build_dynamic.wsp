@@ -28,6 +28,11 @@ let range = make_range(0, 5)
 print "Range 0-5:"
 print range
 
+//range with step just use diferent step to produce array with same lenght
+let range = make_range(0, 6, 0.5)
+print "Range 0-6:"
+print range //1 1.5 2 2.5 3 
+
 let squares = make_squares(5)
 print "First 5 squares:"
 print squares
