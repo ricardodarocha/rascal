@@ -181,7 +181,7 @@ impl Lexer {
     fn read_identifier(&mut self) -> Token {
         let mut ident = String::new();
 
-        while let Some(c) = self.current_char() {
+        while let Some(c) = self.current_char() {            
             if c.is_alphanumeric() || c == '_' {
                 ident.push(c);
                 self.advance();
@@ -191,8 +191,13 @@ impl Lexer {
         }
 
         match ident.as_str() {
+            ":=" => Token::EqualEqual,
+            "begin" => Token::LeftBrace,
+            "end" => Token::RightBrace,
             "let" => Token::Let,
+            "var" => Token::Let,
             "print" => Token::Print,
+            "write" => Token::Print,
             "if" => Token::If,
             "else" => Token::Else,
             "while" => Token::While,
@@ -212,6 +217,7 @@ impl Lexer {
             "slice" => Token::Slice,
             "range" => Token::Range,
             "input" => Token::Input,
+            "read" => Token::Input,
             "read_file" => Token::ReadFile,
             "write_file" => Token::WriteFile,
             "true" => Token::True,
