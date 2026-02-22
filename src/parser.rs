@@ -145,7 +145,7 @@ impl Parser {
         let name = if let Token::Identifier(name) = self.current() {
             name.clone()
         } else {
-            panic!("Expected identifier after let");
+            panic!("Expected identifier after let var");
         };
 
         self.advance();
@@ -473,10 +473,20 @@ impl Parser {
 
     fn parse_term(&mut self) -> Expr {
         match self.current() {
+            Token::Integer(n) => {
+                let v = *n;
+                self.advance();
+                Expr::Integer(v)
+            }
             Token::Number(n) => {
                 let v = *n;
                 self.advance();
                 Expr::Number(v)
+            }
+            Token::Date(n) => {
+                let v = *n;
+                self.advance();
+                Expr::Date(v)
             }
             Token::String(s) => {
                 let v = s.clone();
